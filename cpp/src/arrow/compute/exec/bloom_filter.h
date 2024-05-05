@@ -218,6 +218,17 @@ class ARROW_EXPORT BlockedBloomFilter {
                        uint8_t* result_bit_vector) const;
 #endif
 
+#if defined(ARROW_HAVE_AVX512)
+  inline __m512i mask_avx512(__m512i hash) const;
+  inline __m512i block_id_avx512(__m512i hash) const;
+  int64_t Insert_avx512(int64_t num_rows, const uint64_t* hashes);
+  int64_t InsertImp_avx512(int64_t num_rows, const uint64_t* hashes);
+  int64_t Find_avx512(int64_t num_rows, const uint64_t* hashes,
+                      uint8_t* result_bit_vector) const;
+  int64_t FindImp_avx512(int64_t num_rows, const uint64_t* hashes,
+                         uint8_t* result_bit_vector) const;
+#endif
+
   bool UsePrefetch() const {
     return num_blocks_ * sizeof(uint64_t) > kPrefetchLimitBytes;
   }

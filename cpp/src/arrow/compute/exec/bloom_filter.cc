@@ -134,7 +134,13 @@ void BlockedBloomFilter::Insert(int64_t hardware_flags, int64_t num_rows,
 void BlockedBloomFilter::Insert(int64_t hardware_flags, int64_t num_rows,
                                 const uint64_t* hashes) {
   int64_t num_processed = 0;
-#if defined(ARROW_HAVE_AVX2)
+#if defined(ARROW_HAVE_AVX512)
+  if (hardware_flags & arrow::internal::CpuInfo::AVX512) {
+    num_processed = Insert_avx512(num_rows, hashes);
+  } else if (hardware_flags & arrow::internal::CpuInfo::AVX2) {
+    num_processed = Insert_avx2(num_rows, hashes);
+  }
+#elif defined(ARROW_HAVE_AVX2)
   if (hardware_flags & arrow::internal::CpuInfo::AVX2) {
     num_processed = Insert_avx2(num_rows, hashes);
   }
@@ -202,7 +208,15 @@ void BlockedBloomFilter::Find(int64_t hardware_flags, int64_t num_rows,
                               bool enable_prefetch) const {
   int64_t num_processed = 0;
 
-#if defined(ARROW_HAVE_AVX2)
+#if defined(ARROW_HAVE_AVX512)
+  if (!(enable_prefetch && UsePrefetch())) {
+    if (hardware_flags & arrow::internal::CpuInfo::AVX512) {
+      num_processed = Find_avx512(num_rows, hashes, result_bit_vector);
+    } else if (hardware_flags & arrow::internal::CpuInfo::AVX2) {
+      num_processed = Find_avx2(num_rows, hashes, result_bit_vector);
+    }
+  }
+#elif defined(ARROW_HAVE_AVX2)
   if (!(enable_prefetch && UsePrefetch()) &&
       (hardware_flags & arrow::internal::CpuInfo::AVX2)) {
     num_processed = Find_avx2(num_rows, hashes, result_bit_vector);

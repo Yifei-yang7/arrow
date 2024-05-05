@@ -448,6 +448,7 @@ if(ARROW_COMPUTE)
   append_avx512_src(compute/kernels/aggregate_basic_avx512.cc)
 
   append_avx2_src(compute/exec/bloom_filter_avx2.cc)
+  append_avx512_src(compute/exec/bloom_filter_avx512.cc)
   append_avx2_src(compute/exec/key_compare_avx2.cc)
   append_avx2_src(compute/exec/key_encode_avx2.cc)
   append_avx2_src(compute/exec/key_hash_avx2.cc)
