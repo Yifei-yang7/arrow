@@ -690,6 +690,11 @@ set(EP_CXX_FLAGS
 )
 set(EP_C_FLAGS
     "${CMAKE_C_COMPILER_ARG1} ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${UPPERCASE_BUILD_TYPE}}")
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  # Add -Wno-deprecated-declarations for macOS, otherwise awssdk_ep will have compiler errors
+  set(EP_C_FLAGS "-Wno-deprecated-declarations ${EP_C_FLAGS}")
+  set(EP_CXX_FLAGS "-Wno-deprecated-declarations ${EP_CXX_FLAGS}")
+endif()
 
 if(NOT MSVC_TOOLCHAIN)
   # Set -fPIC on all external projects
