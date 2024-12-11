@@ -181,11 +181,21 @@ Status ExprValidator::ValidateInExpression(size_t number_of_values,
   ARROW_RETURN_IF(number_of_values == 0,
                   Status::ExpressionValidationError(
                       "IN Expression needs a non-empty constant list to match."));
-  ARROW_RETURN_IF(
-      !in_expr_return_type->Equals(type_of_values),
+  if (!in_expr_return_type->Equals(type_of_values)) {
+    // We should not strictly compare the type here, since it's also valid, for example,
+    // when `in_expr_return_type` = `date64` and `type_of_values` = `int64`.
+    bool valid =
+      (in_expr_return_type->id() == arrow::Type::DATE32 && type_of_values->id() == arrow::Type::INT32) ||
+      (in_expr_return_type->id() == arrow::Type::DATE64 && type_of_values->id() == arrow::Type::INT64) ||
+      (in_expr_return_type->id() == arrow::Type::TIMESTAMP && type_of_values->id() == arrow::Type::INT64) ||
+      (in_expr_return_type->id() == arrow::Type::TIME32 && type_of_values->id() == arrow::Type::INT32) ||
+      (in_expr_return_type->id() == arrow::Type::TIME64 && type_of_values->id() == arrow::Type::INT64) ||
+      (in_expr_return_type->id() == arrow::Type::BINARY && type_of_values->id() == arrow::Type::STRING);
+    ARROW_RETURN_IF(!valid,
       Status::ExpressionValidationError(
           "Evaluation expression for IN clause returns ", in_expr_return_type->ToString(),
           " values are of type", type_of_values->ToString()));
+  }
 
   return Status::OK();
 }
